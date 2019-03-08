@@ -85,6 +85,15 @@ class FBAdsCustomAudiencesIntegration extends AbstractIntegration
   }
 
   /**
+   * Get the array key for feature setting customer_file_source.
+   *
+   * @return string
+   */
+  public function getCustomerFileSourceKey() {
+    return 'customer_file_source';
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function getRequiredKeyFields()
@@ -112,9 +121,9 @@ class FBAdsCustomAudiencesIntegration extends AbstractIntegration
                   [
                       'label'    => 'mautic.integration.FBAds.customer_file_source.label',
                       'choices'  => [
-                        'USER_PROVIDED_ONLY'   => 'mautic.plugin.gdprcompliancy.leadfieldform.unsubscribe_handle.keep',
-                        'PARTNER_PROVIDED_ONLY' => 'mautic.plugin.gdprcompliancy.leadfieldform.unsubscribe_handle.remove',
-                        'BOTH_USER_AND_PARTNER_PROVIDED'   => 'mautic.plugin.gdprcompliancy.leadfieldform.unsubscribe_handle.hash',    
+                        'USER_PROVIDED_ONLY'   => 'mautic.integration.FBAds.customer_file_source.USER_PROVIDED_ONLY',
+                        'PARTNER_PROVIDED_ONLY' => 'mautic.integration.FBAds.customer_file_source.PARTNER_PROVIDED_ONLY',
+                        'BOTH_USER_AND_PARTNER_PROVIDED'   => 'mautic.integration.FBAds.customer_file_source.BOTH_USER_AND_PARTNER_PROVIDED',    
                       ],
                       'required' => true,
                       'attr'     => [
