@@ -23,6 +23,7 @@ use FacebookAds\Api;
 
 class FbAdsApiHelper {
   public static $adAccount;
+  public static $customerFileSource;
 
   /**
    * Initialize the FB Ads API.
@@ -33,7 +34,12 @@ class FbAdsApiHelper {
    */
   public static function init(AbstractIntegration $integration) {
     $keys = $integration->getDecryptedApiKeys();
+
+    $integrationSettings = $integration->getIntegrationSettings();
+    $featureSettings     = $integrationSettings->getFeatureSettings();  
+
     static::$adAccount = 'act_' . $keys[$integration->getAdAccountIdKey()];
+    static::$customerFileSource = $featureSettings[$integration->getCustomerFileSourceKey()];
     Api::init($keys[$integration->getClientIdKey()], $keys[$integration->getClientSecretKey()], $keys[$integration->getAuthTokenKey()]);
     return Api::instance();
   }
@@ -94,7 +100,8 @@ class FbAdsApiHelper {
       $audience = new CustomAudienceMultiKey($audience_id);
       $audience->setData(array(
         CustomAudienceFields::NAME => $list->getName(),
-        CustomAudienceFields::DESCRIPTION => 'Mautic Segment: ' . $list->getDescription()
+        CustomAudienceFields::DESCRIPTION => 'Mautic Segment: ' . $list->getDescription(),
+        CustomAudienceFields::CUSTOMER_FILE_SOURCE => static::$customerFileSource
       ));
       $audience->update();
     }
@@ -104,7 +111,8 @@ class FbAdsApiHelper {
       $audience->setData(array(
         CustomAudienceFields::NAME => $list->getName(),
         CustomAudienceFields::SUBTYPE => CustomAudienceSubtypes::CUSTOM,
-        CustomAudienceFields::DESCRIPTION => 'Mautic Segment: ' . $list->getDescription()
+        CustomAudienceFields::DESCRIPTION => 'Mautic Segment: ' . $list->getDescription(),
+        CustomAudienceFields::CUSTOMER_FILE_SOURCE => static::$customerFileSource
       ));
       $audience->create();
     }

@@ -96,4 +96,38 @@ class FBAdsCustomAudiencesIntegration extends AbstractIntegration
       'ad_account_id' => 'mautic.integration.keyfield.FBAds.ad_account_id',
     ];
   }
+
+  /**
+     * @param \Mautic\PluginBundle\Integration\Form|FormBuilder $builder
+     * @param array                                             $data
+     * @param string                                            $formArea
+     */
+    public function appendToForm(&$builder, $data, $formArea)
+    {
+        if ($formArea == 'features') {
+   
+             $builder->add(
+                  'customer_file_source',
+                  'choice',
+                  [
+                      'label'    => 'mautic.integration.FBAds.customer_file_source.label',
+                      'choices'  => [
+                        'USER_PROVIDED_ONLY'   => 'mautic.plugin.gdprcompliancy.leadfieldform.unsubscribe_handle.keep',
+                        'PARTNER_PROVIDED_ONLY' => 'mautic.plugin.gdprcompliancy.leadfieldform.unsubscribe_handle.remove',
+                        'BOTH_USER_AND_PARTNER_PROVIDED'   => 'mautic.plugin.gdprcompliancy.leadfieldform.unsubscribe_handle.hash',    
+                      ],
+                      'required' => true,
+                      'attr'     => [
+                          'class' => 'form-control',
+                          'tooltip' => 'mautic.integration.FBAds.customer_file_source.tooltip',                                               
+                      ],
+                      'expanded'    => false,
+                      'multiple'    => false,
+                      'preferred_choices' => ['BOTH_USER_AND_PARTNER_PROVIDED'], //default behaviour
+                      'required'    => true,                        
+                  ]
+              );           
+        }        
+    }
+
 }
