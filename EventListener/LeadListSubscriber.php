@@ -131,10 +131,14 @@ class LeadListSubscriber extends CommonSubscriber
       }
 
       if ($event->wasAdded()) {
-        FbAdsApiHelper::addUsers($audience, $users);
+        if (!empty($users)){
+          FbAdsApiHelper::addUsers($audience, $users);
+        }
       }
       else {
-        FbAdsApiHelper::removeUsers($audience, $users);
+        if (!empty($users)){
+          FbAdsApiHelper::removeUsers($audience, $users);
+        }
       }
     }
 
@@ -162,10 +166,14 @@ class LeadListSubscriber extends CommonSubscriber
       );
 
       if ($event->wasAdded()) {
-        FbAdsApiHelper::addUsers($audience, $users);
+        if (!empty($users)){
+          FbAdsApiHelper::addUsers($audience, $users);
+        }
       }
       else {
-        FbAdsApiHelper::removeUsers($audience, $users);
+        if (!empty($users)){
+          FbAdsApiHelper::removeUsers($audience, $users);
+        }
       }
     }
   }
