@@ -60,13 +60,15 @@ class PluginSubscriber extends CommonSubscriber
               $users = array();
 
               foreach ($leads as $lead) {
-                $users[] = array(
-                  $lead['firstname'],
-                  $lead['lastname'],
-                  $lead['email'],
-                  $lead['mobile'],
-                  $lead['country'],
-                );
+                if (!empty($lead['email'])){
+                  $users[] = array(
+                    $lead['firstname'],
+                    $lead['lastname'],
+                    $lead['email'],
+                    $lead['mobile'],
+                    $lead['country'],
+                  );
+                }
               }
 
               FbAdsApiHelper::addUsers($audience, $users);
