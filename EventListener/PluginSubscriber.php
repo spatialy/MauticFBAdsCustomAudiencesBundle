@@ -70,10 +70,10 @@ class PluginSubscriber extends CommonSubscriber
                   );
                 }
               }
-
-              dump($list['id'], $users);
-
-              FbAdsApiHelper::addUsers($audience, $users);
+            
+              if (!empty($users)){
+                FbAdsApiHelper::addUsers($audience, $users);
+              }
             }
           }
         }
