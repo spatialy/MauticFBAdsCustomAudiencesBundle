@@ -12,8 +12,7 @@
 
 namespace MauticPlugin\MauticFBAdsCustomAudiencesBundle\EventListener;
 
-use FacebookAds\Object\CustomAudienceMultiKey;
-use FacebookAds\Object\Fields\CustomAudienceMultikeySchemaFields;
+use FacebookAds\Object\CustomAudience;
 use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\LeadBundle\Event\LeadListEvent;
 use Mautic\LeadBundle\Event\ListChangeEvent;
@@ -120,13 +119,7 @@ class LeadListSubscriber extends CommonSubscriber
         $lead = $this->em->getRepository('MauticLeadBundle:Lead')->getEntity($lead_id);
 
         if ($lead->getEmail()) {
-          $users[] = array(
-            $lead->getFirstname(),
-            $lead->getLastname(),
-            $lead->getEmail(),
-            $lead->getMobile(),
-            $lead->getCountry()
-          );
+          $users[] = $lead->getEmail();
         }
       }
 
@@ -160,9 +153,9 @@ class LeadListSubscriber extends CommonSubscriber
     /** @var \Mautic\LeadBundle\Entity\Lead $lead */
     $lead   = $event->getLead();
 
-    if ($audience = FbAdsApiHelper::getFBAudience($event->getList()->getName())) {
+   if ($audience = FbAdsApiHelper::getFBAudience($event->getList()->getName())) {
       $users = array(
-        array($lead->getFirstname(), $lead->getLastname(), $lead->getEmail(), $lead->getMobile(), $lead->getCountry())
+        $lead->getEmail()
       );
 
       if ($event->wasAdded()) {

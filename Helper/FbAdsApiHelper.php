@@ -13,10 +13,9 @@ namespace MauticPlugin\MauticFBAdsCustomAudiencesBundle\Helper;
 
 use FacebookAds\Object\AdAccount;
 use FacebookAds\Object\CustomAudience;
-use FacebookAds\Object\CustomAudienceMultiKey;
 use FacebookAds\Object\Fields\CustomAudienceFields;
-use FacebookAds\Object\Fields\CustomAudienceMultikeySchemaFields;
 use FacebookAds\Object\Values\CustomAudienceSubtypes;
+use FacebookAds\Object\Values\CustomAudienceTypes;
 use Mautic\PluginBundle\Integration\AbstractIntegration;
 
 use FacebookAds\Api;
@@ -71,7 +70,7 @@ class FbAdsApiHelper {
 
   public static function getFBAudience($listName) {
     if ($audience_id = static::getFBAudienceID($listName)) {
-      return new CustomAudienceMultiKey($audience_id);
+      return new CustomAudience($audience_id);
     }
   }
 
@@ -79,7 +78,7 @@ class FbAdsApiHelper {
     $audiences = static::getFBAudiences();
     if (isset($audiences[$name])) {
       $audience_id = $audiences[$name];
-      $audience = new CustomAudienceMultiKey($audience_id);
+      $audience = new CustomAudience($audience_id);
       $audience->deleteSelf();
     }
   }
@@ -97,7 +96,7 @@ class FbAdsApiHelper {
     $audiences = static::getFBAudiences();
     if (isset($audiences[$orig_name])) {
       $audience_id = $audiences[$orig_name];
-      $audience = new CustomAudienceMultiKey($audience_id);
+      $audience = new CustomAudience($audience_id);
       $audience->setData(array(
         CustomAudienceFields::NAME => $list->getName(),
         CustomAudienceFields::DESCRIPTION => 'Mautic Segment: ' . $list->getDescription(),
@@ -106,7 +105,7 @@ class FbAdsApiHelper {
       $audience->update();
     }
     else {
-      $audience = new CustomAudienceMultiKey();
+      $audience = new CustomAudience();
       $audience->setParentId(static::$adAccount);
       $audience->setData(array(
         CustomAudienceFields::NAME => $list->getName(),
@@ -120,21 +119,15 @@ class FbAdsApiHelper {
     return $audience;
   }
 
-  public static function addUsers(CustomAudienceMultiKey $audience, array $users) {
+  public static function addUsers(CustomAudience $audience, array $users) {
     $audience->addUsers($users, static::getFBSchema());
   }
 
-  public static function removeUsers(CustomAudienceMultiKey $audience, array $users) {
+  public static function removeUsers(CustomAudience $audience, array $users) {
     $audience->removeUsers($users, static::getFBSchema());
   }
 
   protected static function getFBSchema() {
-    return array(
-      CustomAudienceMultikeySchemaFields::FIRST_NAME,
-      CustomAudienceMultikeySchemaFields::LAST_NAME,
-      CustomAudienceMultikeySchemaFields::EMAIL,
-      CustomAudienceMultiKeySchemaFields::PHONE,
-      CustomAudienceMultiKeySchemaFields::COUNTRY,
-    );
+    return CustomAudienceTypes::EMAIL;    
   }
 }

@@ -61,13 +61,7 @@ class PluginSubscriber extends CommonSubscriber
 
               foreach ($leads as $lead) {
                 if (!empty($lead['email'])){
-                  $users[] = array(
-                    $lead['firstname']?$lead['firstname']:'',
-                    $lead['lastname']?$lead['lastname']:'',
-                    $lead['email']?$lead['email']:'',
-                    $lead['mobile']?$lead['mobile']:'',
-                    $lead['country']?$lead['country']:'',
-                  );
+                  $users[] = $lead['email'];
                 }
               }
             
