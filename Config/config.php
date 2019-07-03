@@ -24,6 +24,10 @@ return [
       ],
       'mautic.plugin.fbadsaudience.plugin.subscriber' => [
         'class'     => 'MauticPlugin\MauticFBAdsCustomAudiencesBundle\EventListener\PluginSubscriber',
+        'arguments' => [
+          'mautic.helper.integration',
+          'monolog.logger.mautic',
+        ],
       ],
     ],
     'integrations' => [
