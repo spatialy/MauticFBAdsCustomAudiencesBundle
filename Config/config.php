@@ -20,6 +20,7 @@ return [
         'class'     => 'MauticPlugin\MauticFBAdsCustomAudiencesBundle\EventListener\LeadListSubscriber',
         'arguments' => [
           'mautic.helper.integration',
+          'doctrine.orm.entity_manager'
         ],
       ],
       'mautic.plugin.fbadsaudience.plugin.subscriber' => [
@@ -27,12 +28,32 @@ return [
         'arguments' => [
           'mautic.helper.integration',
           'monolog.logger.mautic',
+          'doctrine.orm.entity_manager',
+          'mautic.lead.model.lead_segment_service'
         ],
       ],
     ],
     'integrations' => [
-      'mautic.integration.fbadsaudience' => [
+      'mautic.integration.fbadscustomaudiences' => [
         'class'     => \MauticPlugin\MauticFBAdsCustomAudiencesBundle\Integration\FBAdsCustomAudiencesIntegration::class,
+        'arguments' => [
+                    'event_dispatcher',
+                    'mautic.helper.cache_storage',
+                    'doctrine.orm.entity_manager',
+                    'session',
+                    'request_stack',
+                    'router',
+                    'translator',
+                    'logger',
+                    'mautic.helper.encryption',
+                    'mautic.lead.model.lead',
+                    'mautic.lead.model.company',
+                    'mautic.helper.paths',
+                    'mautic.core.model.notification',
+                    'mautic.lead.model.field',
+                    'mautic.plugin.model.integration_entity',
+                    'mautic.lead.model.dnc',
+                ],
       ],
     ],
   ],

@@ -12,19 +12,31 @@
 
 namespace MauticPlugin\MauticFBAdsCustomAudiencesBundle\EventListener;
 
-use Mautic\CoreBundle\EventListener\CommonSubscriber;
-use Mautic\PluginBundle\Event\PluginIntegrationEvent;
-use Mautic\PluginBundle\PluginEvents;
-
+use Doctrine\ORM\EntityManager;
 use MauticPlugin\MauticFBAdsCustomAudiencesBundle\Helper\FbAdsApiHelper;
+use Mautic\LeadBundle\Segment\ContactSegmentService;
+use Mautic\PluginBundle\Event\PluginIntegrationEvent;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
+use Mautic\PluginBundle\PluginEvents;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Class PluginSubscriber.
  */
-class PluginSubscriber extends CommonSubscriber
+class PluginSubscriber implements EventSubscriberInterface
 {
+
+  /**
+   * @var IntegrationHelper
+   */
+  protected $integrationHelper;
+
+  /**
+   * @var \Doctrine\ORM\EntityManager
+   */
+  protected $em;
+
   /**
    * CampaignSubscriber constructor.
    *
@@ -33,10 +45,14 @@ class PluginSubscriber extends CommonSubscriber
    */
   public function __construct(
       IntegrationHelper $integrationHelper,
-      LoggerInterface $logger        
+      LoggerInterface $logger,
+      EntityManager $entityManager,
+      ContactSegmentService $leadSegmentService
   ) {
       $this->integrationHelper = $integrationHelper;
-      $this->logger = $logger;        
+      $this->logger = $logger;
+      $this->em     = $entityManager;
+      $this->leadSegmentService = $leadSegmentService;
   }  
 
   /**
@@ -68,12 +84,11 @@ class PluginSubscriber extends CommonSubscriber
               }
             }
             else {
-              $listsLeads =  $this->em->getRepository('MauticLeadBundle:LeadList')->getLeadsByList($lists);
               foreach ($lists as $list) {
                 $listEntity = $this->em->getRepository('MauticLeadBundle:LeadList')->getEntity($list['id']);
                 $audience = FbAdsApiHelper::addList($listEntity);
+                $leads = $this->leadSegmentService->getNewLeadListLeads($listEntity, [], null);
 
-                $leads = $listsLeads[$listEntity->getId()];
                 $users = array();
 
                 foreach ($leads as $lead) {

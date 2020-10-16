@@ -12,8 +12,10 @@
 
 namespace MauticPlugin\MauticFBAdsCustomAudiencesBundle\EventListener;
 
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+
+use Doctrine\ORM\EntityManager;
 use FacebookAds\Object\CustomAudience;
-use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\LeadBundle\Event\LeadListEvent;
 use Mautic\LeadBundle\Event\ListChangeEvent;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
@@ -25,7 +27,7 @@ use MauticPlugin\MauticFBAdsCustomAudiencesBundle\Helper\FbAdsApiHelper;
 /**
  * Class LeadListsSubscriber.
  */
-class LeadListSubscriber extends CommonSubscriber
+class LeadListSubscriber implements EventSubscriberInterface
 {
   /**
    * @var \FacebookAds\Api
@@ -35,14 +37,20 @@ class LeadListSubscriber extends CommonSubscriber
   /**
    * @var IntegrationHelper
    */
-  protected $helper;
+  protected $integrationHelper;
+
+  /**
+   * @var \Doctrine\ORM\EntityManager
+   */
+  protected $em;
 
   /**
    * LeadSubscriber constructor.
    */
-  public function __construct(IntegrationHelper $helper)
+  public function __construct(IntegrationHelper $integrationHelper, EntityManager $entityManager)
   {
-    $this->helper = $helper;
+    $this->integrationHelper = $integrationHelper;
+    $this->em     = $entityManager;
     $this->fbAPI = $this->fbApiInit();
   }
 
@@ -65,7 +73,7 @@ class LeadListSubscriber extends CommonSubscriber
    * @return bool|\FacebookAds\Api|null
    */
   protected function fbApiInit() {
-    $integration = $this->helper->getIntegrationObject('FBAdsCustomAudiences');
+    $integration = $this->integrationHelper->getIntegrationObject('FBAdsCustomAudiences');
     if (!$integration || !$integration->getIntegrationSettings()->isPublished()) {
       return FALSE;
     }
