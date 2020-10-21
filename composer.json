@@ -1,10 +1,11 @@
 {
-  "name": "leadengine/mautic-fbadscustomaudiences-bundle",
-  "type": "mautic-plugin",
-  "require": {
-    "mautic/composer-plugin": "^1.0",
-    "facebook/php-ads-sdk": "3.3.*"  },
-  "extra": {
-    "install-directory-name": "LeadEngineFBAdsCustomAudiencesBundle"
-  }
+  	"name": "leadengine/mautic-fbadscustomaudiences-bundle",
+  	"type": "mautic-plugin",
+  	"require": {
+	    "mautic/composer-plugin": "^1.0",
+    	"facebook/php-ads-sdk": "7.*"  
+	},
+  	"extra": {
+	    "install-directory-name": "MauticFBAdsCustomAudiencesBundle"
+  	}
 }

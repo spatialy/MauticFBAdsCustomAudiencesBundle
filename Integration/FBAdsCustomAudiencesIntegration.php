@@ -12,6 +12,7 @@
 namespace MauticPlugin\MauticFBAdsCustomAudiencesBundle\Integration;
 
 use Mautic\PluginBundle\Integration\AbstractIntegration;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 
 /**
  * Class FBAdsCustomAudiencesIntegration.
@@ -22,6 +23,11 @@ class FBAdsCustomAudiencesIntegration extends AbstractIntegration
   public function getName()
   {
     return 'FBAdsCustomAudiences';
+  }
+
+  public function getIcon()
+  {
+      return 'plugins/MauticFBAdsCustomAudiencesBundle/Assets/img/facebook-ads.webp';
   }
 
   /**
@@ -117,13 +123,13 @@ class FBAdsCustomAudiencesIntegration extends AbstractIntegration
    
              $builder->add(
                   'customer_file_source',
-                  'choice',
+                  ChoiceType::class,
                   [
                       'label'    => 'mautic.integration.FBAds.customer_file_source.label',
                       'choices'  => [
-                        'USER_PROVIDED_ONLY'   => 'mautic.integration.FBAds.customer_file_source.USER_PROVIDED_ONLY',
-                        'PARTNER_PROVIDED_ONLY' => 'mautic.integration.FBAds.customer_file_source.PARTNER_PROVIDED_ONLY',
-                        'BOTH_USER_AND_PARTNER_PROVIDED'   => 'mautic.integration.FBAds.customer_file_source.BOTH_USER_AND_PARTNER_PROVIDED',    
+                        'mautic.integration.FBAds.customer_file_source.USER_PROVIDED_ONLY'              => 'USER_PROVIDED_ONLY',
+                        'mautic.integration.FBAds.customer_file_source.PARTNER_PROVIDED_ONLY'           => 'PARTNER_PROVIDED_ONLY',
+                        'mautic.integration.FBAds.customer_file_source.BOTH_USER_AND_PARTNER_PROVIDED'  => 'BOTH_USER_AND_PARTNER_PROVIDED',
                       ],
                       'required' => true,
                       'attr'     => [
@@ -133,7 +139,8 @@ class FBAdsCustomAudiencesIntegration extends AbstractIntegration
                       'expanded'    => false,
                       'multiple'    => false,
                       'preferred_choices' => ['BOTH_USER_AND_PARTNER_PROVIDED'], //default behaviour
-                      'required'    => true,                        
+                      'required'    => true,
+                      'placeholder' => '',
                   ]
               );           
         }        
