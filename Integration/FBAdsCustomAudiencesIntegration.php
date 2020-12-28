@@ -12,6 +12,7 @@
 namespace MauticPlugin\MauticFBAdsCustomAudiencesBundle\Integration;
 
 use Mautic\PluginBundle\Integration\AbstractIntegration;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 
 /**
  * Class FBAdsCustomAudiencesIntegration.
@@ -22,6 +23,11 @@ class FBAdsCustomAudiencesIntegration extends AbstractIntegration
   public function getName()
   {
     return 'FBAdsCustomAudiences';
+  }
+
+  public function getIcon()
+  {
+      return 'plugins/MauticFBAdsCustomAudiencesBundle/Assets/img/facebook-ads.webp';
   }
 
   /**
@@ -85,6 +91,15 @@ class FBAdsCustomAudiencesIntegration extends AbstractIntegration
   }
 
   /**
+   * Get the array key for feature setting customer_file_source.
+   *
+   * @return string
+   */
+  public function getCustomerFileSourceKey() {
+    return 'customer_file_source';
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function getRequiredKeyFields()
@@ -96,4 +111,39 @@ class FBAdsCustomAudiencesIntegration extends AbstractIntegration
       'ad_account_id' => 'mautic.integration.keyfield.FBAds.ad_account_id',
     ];
   }
+
+  /**
+     * @param \Mautic\PluginBundle\Integration\Form|FormBuilder $builder
+     * @param array                                             $data
+     * @param string                                            $formArea
+     */
+    public function appendToForm(&$builder, $data, $formArea)
+    {
+        if ($formArea == 'features') {
+   
+             $builder->add(
+                  'customer_file_source',
+                  ChoiceType::class,
+                  [
+                      'label'    => 'mautic.integration.FBAds.customer_file_source.label',
+                      'choices'  => [
+                        'mautic.integration.FBAds.customer_file_source.USER_PROVIDED_ONLY'              => 'USER_PROVIDED_ONLY',
+                        'mautic.integration.FBAds.customer_file_source.PARTNER_PROVIDED_ONLY'           => 'PARTNER_PROVIDED_ONLY',
+                        'mautic.integration.FBAds.customer_file_source.BOTH_USER_AND_PARTNER_PROVIDED'  => 'BOTH_USER_AND_PARTNER_PROVIDED',
+                      ],
+                      'required' => true,
+                      'attr'     => [
+                          'class' => 'form-control',
+                          'tooltip' => 'mautic.integration.FBAds.customer_file_source.tooltip',                                               
+                      ],
+                      'expanded'    => false,
+                      'multiple'    => false,
+                      'preferred_choices' => ['BOTH_USER_AND_PARTNER_PROVIDED'], //default behaviour
+                      'required'    => true,
+                      'placeholder' => '',
+                  ]
+              );           
+        }        
+    }
+
 }

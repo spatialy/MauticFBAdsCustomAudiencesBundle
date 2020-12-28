@@ -12,17 +12,49 @@
 
 namespace MauticPlugin\MauticFBAdsCustomAudiencesBundle\EventListener;
 
-use Mautic\CoreBundle\EventListener\CommonSubscriber;
-use Mautic\PluginBundle\Event\PluginIntegrationEvent;
-use Mautic\PluginBundle\PluginEvents;
-
+use Doctrine\ORM\EntityManager;
 use MauticPlugin\MauticFBAdsCustomAudiencesBundle\Helper\FbAdsApiHelper;
+use Mautic\LeadBundle\Segment\ContactSegmentService;
+use Mautic\PluginBundle\Event\PluginIntegrationEvent;
+use Mautic\PluginBundle\Helper\IntegrationHelper;
+use Mautic\PluginBundle\PluginEvents;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Class PluginSubscriber.
  */
-class PluginSubscriber extends CommonSubscriber
+class PluginSubscriber implements EventSubscriberInterface
 {
+
+  /**
+   * @var IntegrationHelper
+   */
+  protected $integrationHelper;
+
+  /**
+   * @var \Doctrine\ORM\EntityManager
+   */
+  protected $em;
+
+  /**
+   * CampaignSubscriber constructor.
+   *
+   * @param IntegrationHelper       $integrationHelper
+   * @param LoggerInterface          $logger
+   */
+  public function __construct(
+      IntegrationHelper $integrationHelper,
+      LoggerInterface $logger,
+      EntityManager $entityManager,
+      ContactSegmentService $leadSegmentService
+  ) {
+      $this->integrationHelper = $integrationHelper;
+      $this->logger = $logger;
+      $this->em     = $entityManager;
+      $this->leadSegmentService = $leadSegmentService;
+  }  
+
   /**
    * @return array
    */
@@ -39,39 +71,45 @@ class PluginSubscriber extends CommonSubscriber
       $changes = $event->getEntity()->getChanges();
 
       if (isset($changes['isPublished'])) {
-        $integration = $event->getIntegration();
-        $api = FbAdsApiHelper::init($integration);
+        try {
+          $integration = $event->getIntegration();
+          $api = FbAdsApiHelper::init($integration);
 
-        if ($api) {
-          $lists = $this->em->getRepository('MauticLeadBundle:LeadList')->getLists();
+          if ($api) {
+            $lists = $this->em->getRepository('MauticLeadBundle:LeadList')->getLists();
 
-          if ($changes['isPublished'][1] == 0) {
-            foreach ($lists as $list) {
-              FbAdsApiHelper::deleteList($list['name']);
-            }
-          }
-          else {
-            $listsLeads =  $this->em->getRepository('MauticLeadBundle:LeadList')->getLeadsByList($lists);
-            foreach ($lists as $list) {
-              $listEntity = $this->em->getRepository('MauticLeadBundle:LeadList')->getEntity($list['id']);
-              $audience = FbAdsApiHelper::addList($listEntity);
-
-              $leads = $listsLeads[$listEntity->getId()];
-              $users = array();
-
-              foreach ($leads as $lead) {
-                $users[] = array(
-                  $lead['firstname'],
-                  $lead['lastname'],
-                  $lead['email'],
-                  $lead['mobile'],
-                  $lead['country'],
-                );
+            if ($changes['isPublished'][1] == 0) {
+              foreach ($lists as $list) {
+                FbAdsApiHelper::deleteList($list['name']);
               }
+            }
+            else {
+              foreach ($lists as $list) {
+                $listEntity = $this->em->getRepository('MauticLeadBundle:LeadList')->getEntity($list['id']);
+                $audience = FbAdsApiHelper::addList($listEntity);
+                $leads = $this->leadSegmentService->getNewLeadListLeads($listEntity, [], null);
 
-              FbAdsApiHelper::addUsers($audience, $users);
+                $users = array();
+
+                foreach ($leads as $lead) {
+                  if (!empty($lead['email'])){
+                    $users[] = $lead['email'];
+                  }
+                }
+              
+                if (!empty($users)){
+                  FbAdsApiHelper::addUsers($audience, $users);
+                }
+              }
             }
           }
+        } catch (\Exception $e){
+          $entity = $event->getEntity();
+          $entity->setIsPublished(false);
+          $event->setEntity($entity);
+
+
+          $this->logger->warning($event->getIntegrationName().": Facebook authorization failed: ". $e->getMessage()); 
         }
       }
     }

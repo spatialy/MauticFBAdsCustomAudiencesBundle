@@ -12,9 +12,10 @@
 
 namespace MauticPlugin\MauticFBAdsCustomAudiencesBundle\EventListener;
 
-use FacebookAds\Object\CustomAudienceMultiKey;
-use FacebookAds\Object\Fields\CustomAudienceMultikeySchemaFields;
-use Mautic\CoreBundle\EventListener\CommonSubscriber;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+
+use Doctrine\ORM\EntityManager;
+use FacebookAds\Object\CustomAudience;
 use Mautic\LeadBundle\Event\LeadListEvent;
 use Mautic\LeadBundle\Event\ListChangeEvent;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
@@ -26,7 +27,7 @@ use MauticPlugin\MauticFBAdsCustomAudiencesBundle\Helper\FbAdsApiHelper;
 /**
  * Class LeadListsSubscriber.
  */
-class LeadListSubscriber extends CommonSubscriber
+class LeadListSubscriber implements EventSubscriberInterface
 {
   /**
    * @var \FacebookAds\Api
@@ -36,14 +37,20 @@ class LeadListSubscriber extends CommonSubscriber
   /**
    * @var IntegrationHelper
    */
-  protected $helper;
+  protected $integrationHelper;
+
+  /**
+   * @var \Doctrine\ORM\EntityManager
+   */
+  protected $em;
 
   /**
    * LeadSubscriber constructor.
    */
-  public function __construct(IntegrationHelper $helper)
+  public function __construct(IntegrationHelper $integrationHelper, EntityManager $entityManager)
   {
-    $this->helper = $helper;
+    $this->integrationHelper = $integrationHelper;
+    $this->em     = $entityManager;
     $this->fbAPI = $this->fbApiInit();
   }
 
@@ -66,7 +73,7 @@ class LeadListSubscriber extends CommonSubscriber
    * @return bool|\FacebookAds\Api|null
    */
   protected function fbApiInit() {
-    $integration = $this->helper->getIntegrationObject('FBAdsCustomAudiences');
+    $integration = $this->integrationHelper->getIntegrationObject('FBAdsCustomAudiences');
     if (!$integration || !$integration->getIntegrationSettings()->isPublished()) {
       return FALSE;
     }
@@ -120,21 +127,19 @@ class LeadListSubscriber extends CommonSubscriber
         $lead = $this->em->getRepository('MauticLeadBundle:Lead')->getEntity($lead_id);
 
         if ($lead->getEmail()) {
-          $users[] = array(
-            $lead->getFirstname(),
-            $lead->getLastname(),
-            $lead->getEmail(),
-            $lead->getMobile(),
-            $lead->getCountry()
-          );
+          $users[] = $lead->getEmail();
         }
       }
 
       if ($event->wasAdded()) {
-        FbAdsApiHelper::addUsers($audience, $users);
+        if (!empty($users)){
+          FbAdsApiHelper::addUsers($audience, $users);
+        }
       }
       else {
-        FbAdsApiHelper::removeUsers($audience, $users);
+        if (!empty($users)){
+          FbAdsApiHelper::removeUsers($audience, $users);
+        }
       }
     }
 
@@ -156,16 +161,20 @@ class LeadListSubscriber extends CommonSubscriber
     /** @var \Mautic\LeadBundle\Entity\Lead $lead */
     $lead   = $event->getLead();
 
-    if ($audience = FbAdsApiHelper::getFBAudience($event->getList()->getName())) {
+   if ($audience = FbAdsApiHelper::getFBAudience($event->getList()->getName())) {
       $users = array(
-        array($lead->getFirstname(), $lead->getLastname(), $lead->getEmail(), $lead->getMobile(), $lead->getCountry())
+        $lead->getEmail()
       );
 
       if ($event->wasAdded()) {
-        FbAdsApiHelper::addUsers($audience, $users);
+        if (!empty($users)){
+          FbAdsApiHelper::addUsers($audience, $users);
+        }
       }
       else {
-        FbAdsApiHelper::removeUsers($audience, $users);
+        if (!empty($users)){
+          FbAdsApiHelper::removeUsers($audience, $users);
+        }
       }
     }
   }
